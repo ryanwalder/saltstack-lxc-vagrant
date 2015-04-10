@@ -1,0 +1,9 @@
+ipv6: False
+worker_threads: 3
+
+pidfile: /var/run/salt-master.pid
+timeout: 10
+loop_interval: 30
+
+auto_accept: True
+open_mode: True

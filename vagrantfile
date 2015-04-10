@@ -1,0 +1,83 @@
+# -*- mode: ruby -*-
+# # vi: set ft=ruby :
+
+# Specify minimum Vagrant version and Vagrant API version
+Vagrant.require_version ">= 1.6.0"
+VAGRANTFILE_API_VERSION = "2"
+
+# Require YAML module
+require 'yaml'
+
+# Read YAML file with box details
+servers = YAML.load_file('minions.yaml')
+
+# Create boxes
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.define "saltmaster" do |master|
+    master.vm.provider :lxc do |lxc|
+      lxc.customize 'network.type', "veth"
+      lxc.customize 'network.link', "lxcbr0"
+      lxc.customize 'network.ipv4', "10.0.3.3/24"
+    end
+    master.vm.hostname = "saltmaster"
+    master.vm.synced_folder "~/git/saltstack", "/srv/salt"
+    master.vm.synced_folder "~/git/saltstack-pillar", "/srv/pillar"
+    master.vm.box = "fgrehm/trusty64-lxc"
+    master.vm.provision :salt do |config|
+      config.master_config = "salt/master"
+      config.minion_config = "salt/master_minion"
+      config.run_highstate = false
+      config.install_master = true
+      config.no_minion = false
+      config.verbose = true
+      config.bootstrap_options = "-D"
+      config.temp_config_dir = "/tmp"
+      config.bootstrap_script = "salt/vagrant-master.sh"
+      config.grains({
+        environment: 'development',
+        provider: 'vagrant',
+        role: 'saltmaster',
+    })
+    end
+  end
+
+  # Iterate through entries in YAML file
+  servers.each do |server|
+    if server.has_key?("grains")
+        sgrains = server["grains"]
+    else
+        sgrains = {}
+    end
+    default_grains = {
+        environment: 'development',
+        provider: 'vagrant',
+    }
+    sgrains = sgrains.merge(default_grains)
+    config.vm.define server["name"] do |minion|
+      minion.vm.box = server["box"]
+      minion.vm.hostname = server["name"]
+      if server.has_key?("folders")
+          for pair in server["folders"]
+              minion.vm.synced_folder pair["from"], pair["to"]
+          end
+      end
+      minion.vm.provider :lxc do |lxc|
+        lxc.customize 'cgroup.memory.limit_in_bytes', server["ram"]
+        lxc.customize 'network.type', "veth"
+        lxc.customize 'network.link', "lxcbr0"
+        lxc.customize 'network.ipv4', server["ip"]
+      end
+      minion.vm.provision :salt do |config|
+        config.minion_config = "salt/trusty_minion"
+        config.verbose = true
+        config.install_master = false
+        config.bootstrap_script = "salt/vagrant-minion.sh"
+        config.bootstrap_options = ""
+        config.temp_config_dir = "/tmp"
+        config.run_highstate = false
+        config.grains(sgrains)
+      end
+    end
+  end
+end

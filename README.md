@@ -1,46 +1,148 @@
 # saltstack-lxc-vagrant
-Vagrantfile for setting up a SaltStack test/dev environment.
+Vagrantfile for spinning up a local Salt Master along with as many minions as
+you need defined in a YAML file using LXC containers.
 
 ## Requirements
 
-This assumes Ubuntu 14.04 host, package name likely vary in other distros.
+This assumes Ubuntu 14.04 host, package names are likely vary in other distros.
 
 Packages (apt-get install):
 
-1. vagrant
-2. lxc
+1. vagrant 1.6+
+2. lxc 0.7.5+
 3. cgroups-lite
 4. redir
+5. [kernel !=3.5.0-17.28](https://github.com/fgrehm/vagrant-lxc/wiki/Troubleshooting#im-unable-to-restart-containers)
 
 Vagrant plugins (vagrant plugin install):
 
-1. vagrant-lxc plugin
-2. salty-vagrant-grains
+1. [vagrant-lxc](https://github.com/fgrehm/vagrant-lxc)
+2. [salty-vagrant-grains](https://github.com/ahmadsherif/salty-vagrant-grains)
 
-## Setup
+### Environmental variables
 
-Edit the config.yaml file with the paths to your salt states and salt pillars, these are shared with the salt master so you can develop states from the comfort of your own environment, as soon as you save your files you can use them immediately either from the master or minion.
+Not required but it makes your life easier and saves tens of keystrokes, TENS!
 
-From the master:
+    VAGRANT_DEFAULT_PROVIDER=lxc
+    VAGRANT_DOTFILE_PATH=~/.vagrant
 
-````sudo salt 'minion1' state.highstate````
+## Salt Master
 
-From the minion:
+To use the Salt Master (and be able to provisions systems) you'll need to clone
+your Salt Stack repos into the following directories:
 
-````sudo salt-call state.highstate````
+    git clone git:your-states-repo ~/git/saltstack
+    git clone git:your-pillar-repo ~/git/saltstack-pillar
 
-## Time to play!
+The master will then use whichever states/pillars you have checked out locally
+which means you can edit your states in the comfort of your own environment
+while having your development machines  isolated and easily replaceable.
 
-First we need to fire up the Salt Master
+The Salt Master runs the `fgrehm/trusty64-lxc` box on the IP `10.0.3.2`.
+
+## Minions
+
+### (easily) Available Boxes
+At present this vagrantfile only supports Ubuntu boxes due to an Ubuntu
+specific Salt bootstrap used by the minions.
+
+| Distribution | VagrantCloud box |
+| ------------ | ---------------- |
+| Ubuntu Precise 12.04 x86_64 | [fgrehm/precise64-lxc](https://vagrantcloud.com/fgrehm/precise64-lxc) |
+| Ubuntu Trusty 14.04 x86_64 | [fgrehm/trusty64-lxc](https://vagrantcloud.com/fgrehm/trusty64-lxc) |
+
+I'm planing to make use of the official salt bootstrap in the future to better
+support other OSs (please feel free to make pull requests to help with this!)
+
+### Define minion
+To define minions you need to create a `minions.yaml` in the repo directory
+with the following format:
+
+    - name: minion-box
+      box: fgrehm/trusty64-lxc
+      ram: 512M
+      ip: 10.0.3.11
+
+### Shared folders
+If you need to share folders with the minion you can add them in like so:
+
+    - name: minion-box
+      box: fgrehm/trusty64-lxc
+      ram: 512M
+      ip: 10.0.3.11
+      folders:
+        - from: ~/source/folder
+          to: /destination/folder
+
+You can repeat this as many times as needed:
+
+      folders:
+        - from: ~/source/folder1
+          to: /destination/folder1
+        - from: ~/source/folder2
+          to: /destination/folder2
+        - from: ~/source/folder3
+          to: /destination/folder3
+
+### Salt grains
+There are some default grains that can't be overwritten with the YAML file, if
+you need to change these you'll need to change them in the vagrant file itself.
+
+The reason for this is because I use conditionals in a few states (things like
+updating DNS via a script) and it prevents any accidental triggering of these
+states.
+
+      grains:
+          environment: development
+          provider: vagrant
+
+If you need to define some grains so you can do so as below:
+
+      grains:
+        key: value
+        list:
+          - item1
+          - item2
+
+### Example minion.yaml
+
+    - name: minion-box
+      box: fgrehm/precise64-lxc
+      ram: 512M
+      ip: 10.0.3.11
+      folders:
+        - from: ~/git/my-awesome-website
+          to: /var/www/my-awesome-website
+      grains:
+        role: webserver
+        list:
+          - item1
+          - item2
+
+# Time to play!
+Once you've setup the minions.yaml you can check everything out.
+
+````vagrant status````
+
+First we need to fire up the Salt Master.
 
 ````vagrant up saltmaster````
 
-Once this has booted and configured itself you can now fire up your minions(s)
+Now you can fire up your minions as needed.
 
-````vagrant up minion1````
+````vagrant up minion-box````
 
-You can have up to 10 minions at a time so you can test/develop clusters or multiple connected systems at once.
+By default this vagrantfile does not run a highstate as I find it can slow
+things down when developing states.
 
-## Notes
+Once it's all up and running you can ssh into it and run a highstate manually
 
-I do not suggest firing up both master and minions at the same time as this can lead to a broken setup where the minions are up before the master which means you need to manually restart the salt-minion on each minion box to get them taliking to the master properly, and that's no fun.
+````vagrant ssh minion-box````
+````sudo salt-call state.highstate````
+
+# Notes
+
+I do not suggest firing up both master and minions at the same time as this can
+lead to a broken setup where the minions are up before the master which means
+you need to manually restart the salt-minion on each minion box to get them
+taliking to the master properly, and that's no fun.

@@ -1,0 +1,21 @@
+- name: minion-box1
+  box: fgrehm/trusty64-lxc
+  ram: 1024M
+  ip: 10.0.3.11
+  folders:
+    - from: ~/git/my-awesome-website
+      to: /var/www/my-awesome-website
+  grains:
+    role:
+      - webserver
+
+- name: minion-box2
+  box: fgrehm/precise64-lxc
+  ram: 1024M
+  ip: 10.0.3.11
+  folders:
+    - from: ~/git/my-awesome-website
+      to: /var/www/my-awesome-website
+  grains:
+    role:
+      - webserver
