@@ -4,24 +4,24 @@ you need defined in a YAML file using LXC containers.
 
 ## Requirements
 
-This assumes Ubuntu 14.04 host, package names are likely vary in other distros.
+This assumes Ubuntu a 14.04 host, package names are likely vary in other distros.
 
-Packages (apt-get install):
+Packages:
 
-1. vagrant 1.6+
+1. [vagrant 1.6+](http://www.vagrantup.com/downloads.html)
 2. lxc 0.7.5+
 3. cgroups-lite
 4. redir
 5. [kernel !=3.5.0-17.28](https://github.com/fgrehm/vagrant-lxc/wiki/Troubleshooting#im-unable-to-restart-containers)
 
-Vagrant plugins (vagrant plugin install):
+Vagrant plugins:
 
 1. [vagrant-lxc](https://github.com/fgrehm/vagrant-lxc)
 2. [salty-vagrant-grains](https://github.com/ahmadsherif/salty-vagrant-grains)
 
 ### Environmental variables
 
-Not required but it makes your life easier and saves tens of keystrokes, TENS!
+Not required but it makes your life easier if you use this a a lot.
 
     VAGRANT_DEFAULT_PROVIDER=lxc
     VAGRANT_DOTFILE_PATH=~/.vagrant
@@ -137,7 +137,7 @@ things down when developing states.
 
 Once it's all up and running you can ssh into it and run a highstate manually
 
-````vagrant ssh minion-box````
+````vagrant ssh minion-box````  
 ````sudo salt-call state.highstate````
 
 # Notes
