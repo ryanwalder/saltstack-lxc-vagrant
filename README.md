@@ -2,6 +2,11 @@
 Vagrantfile for spinning up a local Salt Master along with as many minions as
 you need defined in a YAML file using LXC containers.
 
+At present this vagrantfile only supports Ubuntu boxes due to an Ubuntu
+specific Salt bootstrap used by the minions. I'm planing to make use of the
+official salt bootstrap in the future to better support other OSs (please feel
+free to make pull requests to help with this!)
+
 ## Requirements
 
 This assumes Ubuntu a 14.04 host, package names are likely vary in other distros.
@@ -43,16 +48,15 @@ The Salt Master runs the `fgrehm/trusty64-lxc` box on the IP `10.0.3.2`.
 ## Minions
 
 ### (easily) Available Boxes
-At present this vagrantfile only supports Ubuntu boxes due to an Ubuntu
-specific Salt bootstrap used by the minions.
+
+As stated above, only Ubuntu is supported atm so the box choice is a little
+limited.
 
 | Distribution | VagrantCloud box |
 | ------------ | ---------------- |
 | Ubuntu Precise 12.04 x86_64 | [fgrehm/precise64-lxc](https://vagrantcloud.com/fgrehm/precise64-lxc) |
 | Ubuntu Trusty 14.04 x86_64 | [fgrehm/trusty64-lxc](https://vagrantcloud.com/fgrehm/trusty64-lxc) |
 
-I'm planing to make use of the official salt bootstrap in the future to better
-support other OSs (please feel free to make pull requests to help with this!)
 
 ### Define minion
 To define minions you need to create a `minions.yaml` in the repo directory
@@ -137,7 +141,7 @@ things down when developing states.
 
 Once it's all up and running you can ssh into it and run a highstate manually
 
-````vagrant ssh minion-box````  
+````vagrant ssh minion-box````
 ````sudo salt-call state.highstate````
 
 # Notes
