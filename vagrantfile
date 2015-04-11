@@ -1,14 +1,12 @@
 # -*- mode: ruby -*-
 # # vi: set ft=ruby :
 
-# Specify minimum Vagrant version and Vagrant API version
+# Minimum Vagrant version and Vagrant API version needed, include YAML module
 Vagrant.require_version ">= 1.6.0"
 VAGRANTFILE_API_VERSION = "2"
-
-# Require YAML module
 require 'yaml'
 
-# Read YAML file with box details
+# Read YAML file with box details, used later to define the minions
 servers = YAML.load_file('minions.yaml')
 
 # Check for Salt repo env vars and raise an exception if not found
@@ -24,25 +22,34 @@ end
 # Create boxes
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
+  # Create Salt Master
   config.vm.define "saltmaster" do |master|
+    # Configure networking
     master.vm.provider :lxc do |lxc|
       lxc.customize 'network.type', "veth"
       lxc.customize 'network.link', "lxcbr0"
       lxc.customize 'network.ipv4', "10.0.3.3/24"
     end
+    # Set the hostname and box
     master.vm.hostname = "saltmaster"
+    master.vm.box = "fgrehm/trusty64-lxc"
+    # Share states and pillar from host
     master.vm.synced_folder ENV["VLS_STATES"], "/srv/salt"
     master.vm.synced_folder ENV["VLS_PILLAR"], "/srv/pillar"
-    master.vm.box = "fgrehm/trusty64-lxc"
+    # Install and configure the Salt Master
     master.vm.provision :salt do |config|
-      config.master_config = "salt/master"
-      config.minion_config = "salt/master_minion"
-      config.run_highstate = false
       config.install_master = true
-      config.no_minion = false
-      config.verbose = true
       config.bootstrap_options = "-M"
       config.temp_config_dir = "/tmp"
+      # Copy over the configs
+      config.master_config = "salt/master"
+      config.minion_config = "salt/master_minion"
+      # Don't run a highstate, master config may differ from the one needed
+      config.run_highstate = false
+      # Install the minion, may be used for Salt Mine data
+      config.no_minion = false
+      config.verbose = true
+      # Set some grains
       config.grains({
         environment: 'development',
         provider: 'vagrant',
@@ -53,37 +60,49 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Iterate through entries in YAML file
   servers.each do |server|
+    # If the minion has grains defined add the in
     if server.has_key?("grains")
         sgrains = server["grains"]
     else
         sgrains = {}
     end
+    # Default grains, can't be overwritten by the YAML, useful if you need to
+    # do anything specific to Vagrant/lxc in the states
     default_grains = {
         environment: 'development',
         provider: 'vagrant',
     }
     sgrains = sgrains.merge(default_grains)
+    # Create the minion
     config.vm.define server["name"] do |minion|
       minion.vm.box = server["box"]
       minion.vm.hostname = server["name"]
+      # If the minion has shard folders defined in the YAML itterate over them
+      # and share them with the minion
       if server.has_key?("folders")
           for pair in server["folders"]
               minion.vm.synced_folder pair["from"], pair["to"]
           end
       end
+      # Configure networking
       minion.vm.provider :lxc do |lxc|
         lxc.customize 'cgroup.memory.limit_in_bytes', server["ram"]
         lxc.customize 'network.type', "veth"
         lxc.customize 'network.link', "lxcbr0"
         lxc.customize 'network.ipv4', server["ip"]
       end
+      # Install and configure the Salt Minion
       minion.vm.provision :salt do |config|
-        config.minion_config = "salt/minion"
-        config.verbose = true
+        # Copy over the minion config so it can talk to the Salt Master
         config.install_master = false
         config.bootstrap_options = ""
         config.temp_config_dir = "/tmp"
+        config.minion_config = "salt/minion"
+        config.verbose = true
+        # Don't run a highstate, if the highstate fails for whatever reason
+        # Vagrant gives an error (non zero exit) which can be frustrating
         config.run_highstate = false
+        # Set Minion grains
         config.grains(sgrains)
       end
     end
