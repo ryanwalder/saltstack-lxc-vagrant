@@ -19,6 +19,9 @@ unless missing.empty?
   raise "ERROR: The following variables are missing and are needed to run this Vagrantfile: #{missing.join(', ')}."
 end
 
+# Set Salt version
+salt_version = ENV['VLS_SALT_VERSION'] || "stable"
+
 # Create boxes
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
@@ -43,9 +46,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Install and configure the Salt Master
     master.vm.provision :salt do |config|
       config.install_master = true
-      config.bootstrap_options = "-M"
-      config.temp_config_dir = "/tmp"
+      config.bootstrap_options = ""
+      config.install_type = salt_version
       # Copy over the configs
+      config.temp_config_dir = "/tmp"
       config.master_config = "salt/master"
       config.minion_config = "salt/master_minion"
       # Don't run a highstate, master config may differ from the one needed
@@ -101,6 +105,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       # Install and configure the Salt Minion
       minion.vm.provision :salt do |config|
+      config.install_type = salt_version
         # Copy over the minion config so it can talk to the Salt Master
         config.install_master = false
         config.bootstrap_options = ""

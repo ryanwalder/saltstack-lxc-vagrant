@@ -25,12 +25,20 @@ This assumes Ubuntu a 14.04 host, package names are likely vary in other distros
 You'll need to set 2 environmental variables pointing to your Salt states and
 Salt pillars.
 
-    VLS_STATES=/path/to/your/states
-    VLS_PILLAR=/path/to/your/pillar
+    VLS_STATES="/path/to/your/states"
+    VLS_PILLAR="/path/to/your/pillar"
 
-Not required but it makes your life easier if you use this vagrantfile a lot.
 
-    VAGRANT_DEFAULT_PROVIDER=lxc
+#### Optional
+
+Specify the Salt version to install on both the Master & Minions, defaults to
+stable. For more info see [salt-bootstrap](https://github.com/saltstack/salt-bootstrap).
+
+    VLS_SALT_VERSION="git v2015.2"
+
+Makes your life easier if you use lxc all the time.
+
+    VAGRANT_DEFAULT_PROVIDER="lxc"
 
 ## Salt Master
 
@@ -138,7 +146,7 @@ things down when developing states.
 
 Once it's all up and running you can ssh into it and run a highstate manually
 
-````vagrant ssh minion-box````  
+````vagrant ssh minion-box````
 ````sudo salt-call state.highstate````
 
 # Notes
