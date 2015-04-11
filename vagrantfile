@@ -69,7 +69,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         lxc.customize 'network.ipv4', server["ip"]
       end
       minion.vm.provision :salt do |config|
-        config.minion_config = "salt/trusty_minion"
+        config.minion_config = "salt/minion"
         config.verbose = true
         config.install_master = false
         config.bootstrap_script = "salt/vagrant-minion.sh"

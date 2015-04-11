@@ -1,5 +1,0 @@
-master:
-  - 10.0.3.2
-
-master_alive_interval: 9000
-
