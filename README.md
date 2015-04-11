@@ -135,7 +135,7 @@ things down when developing states.
 
 Once it's all up and running you can ssh into it and run a highstate manually
 
-````vagrant ssh minion-box````
+````vagrant ssh minion-box````  
 ````sudo salt-call state.highstate````
 
 # Notes
