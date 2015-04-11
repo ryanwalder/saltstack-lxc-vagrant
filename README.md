@@ -21,21 +21,23 @@ This assumes Ubuntu a 14.04 host, package names are likely vary in other distros
 
 ### Environmental variables
 
-Not required but it makes your life easier if you use this a a lot.
+You'll need to set 2 environmental variables pointing to your Salt states and
+Salt pillars.
+
+    VLS_STATES=/path/to/your/states
+    VLS_PILLAR=/path/to/your/pillar
+
+Not required but it makes your life easier if you use this vagrantfile a lot.
 
     VAGRANT_DEFAULT_PROVIDER=lxc
 
 ## Salt Master
 
-To use the Salt Master (and be able to provisions systems) you'll need to clone
-your Salt Stack repos into the following directories:
-
-    git clone git:your-states-repo ~/git/saltstack
-    git clone git:your-pillar-repo ~/git/saltstack-pillar
-
-The master will then use whichever states/pillars you have checked out locally
-which means you can edit your states in the comfort of your own environment
-while having your development machines  isolated and easily replaceable.
+Once you've setup your enviromental variables to point to your local states and
+pillars these will be mounted to `/srv/salt` and `/srv/pillar` on the Salt
+Master which will then be used for highstates and the like which means you can
+edit your states in the comfort of your own environment while having your
+development machines isolated and easily replaceable.
 
 The Salt Master runs the `fgrehm/trusty64-lxc` box on the IP `10.0.3.2`.
 

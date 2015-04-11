@@ -11,6 +11,16 @@ require 'yaml'
 # Read YAML file with box details
 servers = YAML.load_file('minions.yaml')
 
+# Check for Salt repo env vars and raise an exception if not found
+# Credit to @mneedham for his blogpost below for the code snippet to check
+# envars exist.
+# http://www.markhneedham.com/blog/2010/11/24/ruby-checking-for-environment-variables-in-a-script/
+variables = %w{VLS_STATES VLS_PILLAR}
+missing = variables.find_all { |v| ENV[v] == nil }
+unless missing.empty?
+  raise "The following variables are missing and are needed to run this Vagrantfile: #{missing.join(', ')}."
+end
+
 # Create boxes
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
@@ -21,8 +31,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       lxc.customize 'network.ipv4', "10.0.3.3/24"
     end
     master.vm.hostname = "saltmaster"
-    master.vm.synced_folder "~/git/saltstack", "/srv/salt"
-    master.vm.synced_folder "~/git/saltstack-pillar", "/srv/pillar"
+    master.vm.synced_folder ENV["VLS_STATES"], "/srv/salt"
+    master.vm.synced_folder ENV["VLS_PILLAR"], "/srv/pillar"
     master.vm.box = "fgrehm/trusty64-lxc"
     master.vm.provision :salt do |config|
       config.master_config = "salt/master"
