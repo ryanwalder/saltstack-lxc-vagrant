@@ -16,7 +16,7 @@ servers = YAML.load_file('minions.yaml')
 variables = %w{VLS_STATES VLS_PILLAR}
 missing = variables.find_all { |v| ENV[v] == nil }
 unless missing.empty?
-  raise "The following variables are missing and are needed to run this Vagrantfile: #{missing.join(', ')}."
+  raise "ERROR: The following variables are missing and are needed to run this Vagrantfile: #{missing.join(', ')}."
 end
 
 # Create boxes
