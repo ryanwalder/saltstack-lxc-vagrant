@@ -67,31 +67,37 @@ Want to use a different box? Check out the [vagrant-lxc-base-boxes](https://gith
 To define minions you need to create a `minions.yaml` in the repo directory
 with the following format:
 
-    - name: minion-box
-      box: fgrehm/trusty64-lxc
-      ram: 512M
-      ip: 10.0.3.11
+```yaml
+- name: minion-box
+  box: fgrehm/trusty64-lxc
+  ram: 512M
+  ip: 10.0.3.11
+```
 
 ### Shared folders
 If you need to share folders with the minion you can add them in like so:
 
-    - name: minion-box
-      box: fgrehm/trusty64-lxc
-      ram: 512M
-      ip: 10.0.3.11
-      folders:
-        - from: ~/source/folder
-          to: /destination/folder
+```yaml
+- name: minion-box
+  box: fgrehm/trusty64-lxc
+  ram: 512M
+  ip: 10.0.3.11
+  folders:
+    - from: ~/source/folder
+      to: /destination/folder
+```
 
 You can repeat this as many times as needed:
 
-      folders:
-        - from: ~/source/folder1
-          to: /destination/folder1
-        - from: ~/source/folder2
-          to: /destination/folder2
-        - from: ~/source/folder3
-          to: /destination/folder3
+```yaml
+ folders:
+   - from: ~/source/folder1
+     to: /destination/folder1
+   - from: ~/source/folder2
+     to: /destination/folder2
+   - from: ~/source/folder3
+     to: /destination/folder3
+```
 
 ### Salt grains
 There are some default grains that can't be overwritten with the YAML file, if
@@ -101,32 +107,38 @@ The reason for this is because I use conditionals in a few states (things like
 updating DNS via a script) and it prevents any accidental triggering of these
 states.
 
-      grains:
-          environment: development
-          provider: vagrant
+```yaml
+  grains:
+      environment: development
+      provider: vagrant
+```
 
 If you need to define some grains so you can do so as below:
 
-      grains:
-        key: value
-        list:
-          - item1
-          - item2
+```yaml
+  grains:
+    key: value
+    list:
+      - item1
+      - item2
+```
 
 ### Example minion.yaml
 
-    - name: minion-box
-      box: fgrehm/precise64-lxc
-      ram: 512M
-      ip: 10.0.3.11
-      folders:
-        - from: ~/git/my-awesome-website
-          to: /var/www/my-awesome-website
-      grains:
-        role: webserver
-        list:
-          - item1
-          - item2
+```yaml
+- name: minion-box
+  box: fgrehm/precise64-lxc
+  ram: 512M
+  ip: 10.0.3.11
+  folders:
+    - from: ~/git/my-awesome-website
+      to: /var/www/my-awesome-website
+  grains:
+    role: webserver
+    list:
+      - item1
+      - item2
+```
 
 # Time to play!
 Once you've setup the minions.yaml you can check everything out.
@@ -146,7 +158,7 @@ things down when developing states.
 
 Once it's all up and running you can ssh into it and run a highstate manually
 
-````vagrant ssh minion-box````
+````vagrant ssh minion-box````  
 ````sudo salt-call state.highstate````
 
 # Notes
