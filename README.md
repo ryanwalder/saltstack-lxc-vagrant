@@ -18,6 +18,7 @@ This assumes Ubuntu a 14.04 host, package names are likely vary in other distros
 
 1. [vagrant-lxc](https://github.com/fgrehm/vagrant-lxc)
 2. [salty-vagrant-grains](https://github.com/ahmadsherif/salty-vagrant-grains)
+3. [vagrant-cachier](https://github.com/fgrehm/vagrant-cachier) (optional)
 
 ### Environmental variables
 
