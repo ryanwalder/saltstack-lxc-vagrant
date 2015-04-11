@@ -31,9 +31,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.install_master = true
       config.no_minion = false
       config.verbose = true
-      config.bootstrap_options = "-D"
+      config.bootstrap_options = "-M"
       config.temp_config_dir = "/tmp"
-      config.bootstrap_script = "salt/vagrant-master.sh"
       config.grains({
         environment: 'development',
         provider: 'vagrant',
@@ -72,7 +71,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.minion_config = "salt/minion"
         config.verbose = true
         config.install_master = false
-        config.bootstrap_script = "salt/vagrant-minion.sh"
         config.bootstrap_options = ""
         config.temp_config_dir = "/tmp"
         config.run_highstate = false

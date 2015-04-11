@@ -2,16 +2,11 @@
 Vagrantfile for spinning up a local Salt Master along with as many minions as
 you need defined in a YAML file using LXC containers.
 
-At present this vagrantfile only supports Ubuntu boxes due to an Ubuntu
-specific Salt bootstrap used by the minions. I'm planing to make use of the
-official salt bootstrap in the future to better support other OSs (please feel
-free to make pull requests to help with this!)
-
 ## Requirements
 
 This assumes Ubuntu a 14.04 host, package names are likely vary in other distros.
 
-Packages:
+### Packages
 
 1. [vagrant 1.6+](http://www.vagrantup.com/downloads.html)
 2. lxc 0.7.5+
@@ -19,7 +14,7 @@ Packages:
 4. redir
 5. [kernel !=3.5.0-17.28](https://github.com/fgrehm/vagrant-lxc/wiki/Troubleshooting#im-unable-to-restart-containers)
 
-Vagrant plugins:
+###Vagrant plugins
 
 1. [vagrant-lxc](https://github.com/fgrehm/vagrant-lxc)
 2. [salty-vagrant-grains](https://github.com/ahmadsherif/salty-vagrant-grains)
@@ -29,7 +24,6 @@ Vagrant plugins:
 Not required but it makes your life easier if you use this a a lot.
 
     VAGRANT_DEFAULT_PROVIDER=lxc
-    VAGRANT_DOTFILE_PATH=~/.vagrant
 
 ## Salt Master
 
@@ -47,16 +41,16 @@ The Salt Master runs the `fgrehm/trusty64-lxc` box on the IP `10.0.3.2`.
 
 ## Minions
 
-### (easily) Available Boxes
-
-As stated above, only Ubuntu is supported atm so the box choice is a little
-limited.
+### Available Boxes
 
 | Distribution | VagrantCloud box |
 | ------------ | ---------------- |
 | Ubuntu Precise 12.04 x86_64 | [fgrehm/precise64-lxc](https://vagrantcloud.com/fgrehm/precise64-lxc) |
 | Ubuntu Trusty 14.04 x86_64 | [fgrehm/trusty64-lxc](https://vagrantcloud.com/fgrehm/trusty64-lxc) |
+| Debian Wheezy 7 x86_64 | [fgrehm/wheezy64-lxc](https://vagrantcloud.com/fgrehm/wheezy64-lxc) |
+| CentOS 6 x86_64 | [fgrehm/centos-6-64-lxc](https://vagrantcloud.com/fgrehm/centos-6-64-lxc) |
 
+Want to use a different box? Check out the [vagrant-lxc-base-boxes](https://github.com/fgrehm/vagrant-lxc-base-boxes) repo.
 
 ### Define minion
 To define minions you need to create a `minions.yaml` in the repo directory
@@ -150,3 +144,6 @@ I do not suggest firing up both master and minions at the same time as this can
 lead to a broken setup where the minions are up before the master which means
 you need to manually restart the salt-minion on each minion box to get them
 taliking to the master properly, and that's no fun.
+
+The keys in salt/keys are insecure, they are only meant for use in this Vagrant
+setup, DO NOT use them anywhere else!
