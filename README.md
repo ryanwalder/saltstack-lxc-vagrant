@@ -10,7 +10,7 @@ This assumes Ubuntu a 14.04 host, package names are likely vary in other distros
 
 1. [vagrant 1.6+](http://www.vagrantup.com/downloads.html)
 2. lxc 0.7.5+
-3. cgroups-lite
+3. cgroup-lite
 4. redir
 5. [kernel !=3.5.0-17.28](https://github.com/fgrehm/vagrant-lxc/wiki/Troubleshooting#im-unable-to-restart-containers)
 
