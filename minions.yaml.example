@@ -1,21 +1,40 @@
-- name: minion-box1
+- name: nginx-001
   box: fgrehm/trusty64-lxc
   ram: 1024M
   ip: 10.0.3.11
   folders:
-    - from: ~/git/my-awesome-website
-      to: /var/www/my-awesome-website
+    - from: example/website
+      to: /var/www/example
   grains:
     role:
       - webserver
 
-- name: minion-box2
-  box: fgrehm/precise64-lxc
+- name: nginx-002
+  box: fgrehm/trusty64-lxc
   ram: 1024M
-  ip: 10.0.3.11
+  ip: 10.0.3.12
   folders:
-    - from: ~/git/my-awesome-website
-      to: /var/www/my-awesome-website
+    - from: example/website
+      to: /var/www/example
   grains:
     role:
       - webserver
+
+- name: nginx-003
+  box: fgrehm/trusty64-lxc
+  ram: 1024M
+  ip: 10.0.3.13
+  folders:
+    - from: example/website
+      to: /var/www/example
+  grains:
+    role:
+      - webserver
+
+- name: haproxy
+  box: fgrehm/trusty64-lxc
+  ram: 1024M
+  ip: 10.0.3.15
+  grains:
+    role:
+      - haproxy
