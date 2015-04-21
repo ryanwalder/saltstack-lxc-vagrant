@@ -52,11 +52,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.temp_config_dir = "/tmp"
       config.master_config = "salt/master"
       config.minion_config = "salt/master_minion"
-      # Don't run a highstate, master config may differ from the one needed
+      # Don't run a highstate, master config may differ from the one needed for
+      # use in this setup.
       config.run_highstate = false
       # Install the minion, may be used for Salt Mine data
       config.no_minion = false
-      config.verbose = true
+      config.verbose = false
       # Set some grains
       config.grains({
         environment: 'development',
@@ -111,10 +112,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.bootstrap_options = ""
         config.temp_config_dir = "/tmp"
         config.minion_config = "salt/minion"
-        config.verbose = true
+        config.verbose = false
         # Don't run a highstate, if the highstate fails for whatever reason
         # Vagrant gives an error (non zero exit) which can be frustrating
-        config.run_highstate = false
+        if server.has_key?("highstate")
+          config.run_highstate = server["highstate"]
+        else
+          config.run_highstate = false
+        end
         # Set Minion grains
         config.grains(sgrains)
       end
