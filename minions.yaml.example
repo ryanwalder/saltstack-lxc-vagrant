@@ -3,9 +3,9 @@
   ram: 1024M
   ip: 10.0.3.11
   highstate: true
-  folders:
-    - from: example/website
-      to: /var/www/example
+#  folders:
+#    - from: example/website
+#      to: /var/www/example
   grains:
     role:
       - webserver
@@ -15,9 +15,9 @@
   ram: 1024M
   ip: 10.0.3.12
   highstate: true
-  folders:
-    - from: example/website
-      to: /var/www/example
+#  folders:
+#    - from: example/website
+#      to: /var/www/example
   grains:
     role:
       - webserver
@@ -27,9 +27,9 @@
   ram: 1024M
   ip: 10.0.3.13
   highstate: true
-  folders:
-    - from: example/website
-      to: /var/www/example
+#  folders:
+#    - from: example/website
+#      to: /var/www/example
   grains:
     role:
       - webserver
@@ -39,9 +39,9 @@
   ram: 1024M
   ip: 10.0.3.14
   highstate: true
-  folders:
-    - from: example/website
-      to: /var/www/example
+#  folders:
+#    - from: example/website
+#      to: /var/www/example
   grains:
     role:
       - webserver
