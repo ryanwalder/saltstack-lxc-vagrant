@@ -1,2 +1,4 @@
-minions.yaml
+vagrant.yaml
 .vagrant
+vagrant/master
+vagrant/minion

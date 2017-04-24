@@ -1,172 +1,237 @@
 # saltstack-lxc-vagrant
-Vagrantfile for spinning up a local Salt Master along with as many minions as
-you need defined in a YAML file using LXC containers.
+
+Vagrantfile for spinning up a local Salt Master and minions, all defined in YAML because YAML is nice to read and anyone using salt should be familiar with it!
 
 ## Requirements
 
-This assumes Ubuntu a 14.04 host, package names are likely vary in other distros.
+This assumes Ubuntu a 16.04 host, but should work on any modern linux distro (package names are likely vary)
+
+### A Note on Boxes
+
+For now the default box is the `fgrehm/trusty64-lxc` box which is reasonably out of date due to the maintainer of the Vagrant lxc base boxes stepping down so this box is no longer updated or uploaded to Atlas, you can however really easily make your own boxes from the forked and maintained [repo](https://github.com/obnoxxx/vagrant-lxc-base-boxes) which you can use either locally or upload to a server and use the url.
 
 ### Packages
 
-1. [vagrant 1.6+](http://www.vagrantup.com/downloads.html)
-2. lxc 0.7.5+
-3. cgroup-lite
-4. redir
-5. [kernel !=3.5.0-17.28](https://github.com/fgrehm/vagrant-lxc/wiki/Troubleshooting#im-unable-to-restart-containers)
 
-###Vagrant plugins
+0. Vagrant 1.5+ (tested with 1.7.2)
+0. lxc 0.7.5+
+0. tar 1.27 (the lxc-template script uses the --xattrs option)
+0. `redir` (if you are planning to use port forwarding)
+0. `brctl` (if you are planning to use private networks, on Ubuntu this means apt-get install bridge-utils)
+0. [kernel !=3.5.0-17.28](https://github.com/fgrehm/vagrant-lxc/wiki/Troubleshooting#im-unable-to-restart-containers)
+
+### Vagrant plugins
 
 1. [vagrant-lxc](https://github.com/fgrehm/vagrant-lxc)
-2. [salty-vagrant-grains](https://github.com/ahmadsherif/salty-vagrant-grains)
-3. [vagrant-cachier](https://github.com/fgrehm/vagrant-cachier) (optional)
+2. [salty-vagrant-grains](https://github.com/ahmadsherif/salty-vagrant-grains) (optional)
 
-### Environmental variables
+If installed the vagrant-salty-grains plugin will be used for creating grains on the minions and devmaster.
 
-You'll need to set 2 environmental variables pointing to your Salt states and
-Salt pillars.
+## Quickstart
 
-    VLS_STATES="/path/to/your/states"
-    VLS_PILLAR="/path/to/your/pillar"
+0. Clone the repo
+    * `git clone https://github.com/ryanwalder/saltstack-lxc-vagrant.git`
+0. Copy the `vagrant.example.yaml` to `vagrant.yaml`
+    * `cd saltstack-lxc-vagrant && cp vagrant.example.yaml vagrant.yaml`
+0. Check your available boxes
+    * `vagrant status`
+0. Spin up the devmaster
+    * `vagrant up saltmaster`
+0. Spin up the minions as desired
+    * `vagrant up box-01`
 
+Once you're up and running you'll need to create some `top.sls` files in `salt/salt` and `salt/pillar` (the master will automatically load these when you create them) from here you can get on with [developing some salt](https://docs.saltstack.com/en/getstarted/config/).
 
-#### Optional
+> Note: This Vagrantfile does not run a highstate by default (configurable below) as I find it can slow things down when developing states. Once you're all up and running you can ssh into it and run a highstate manually with `vagrant ssh minion-box` then `sudo salt-call state.highstate`
 
-Specify the Salt version to install on both the Master & Minions, defaults to
-stable. For more info see [salt-bootstrap](https://github.com/saltstack/salt-bootstrap).
+## YAML file
 
-    VLS_SALT_VERSION="git v2015.2"
+All settings and minions are defined in the `vagrant.yaml` file with everything having sane defaults and being customizable as needed.
 
-Makes your life easier if you use lxc all the time.
+Both the Master and Minion configs are automatically generated if they don't exist or when you update the `vagrant.yaml`.
 
-    VAGRANT_DEFAULT_PROVIDER="lxc"
+> NOTE: Updating either the master or minion config will require reprovisioning all machines as these files are injected during machine creation
 
-## Salt Master
+### Global Settings
 
-Once you've setup your enviromental variables to point to your local states and
-pillars these will be mounted to `/srv/salt` and `/srv/pillar` on the Salt
-Master which will then be used for highstates and the like which means you can
-edit your states in the comfort of your own environment while having your
-development machines isolated and easily replaceable.
+All global settings are stored under the `settings` key, some can be overidden on a per machine basis (detailed below).
 
-The Salt Master runs the `fgrehm/trusty64-lxc` box on the IP `10.0.3.2`.
+| Key | Use | Default Value |
+| --- | --- | ------------- |
+| `salt_version` | Set version of salt to use/install | stable |
+| `domain` | Appended to the end of minion names | |
+| `default_box` | Default box to use for minions | fgrehm/trusty64-lxc |
+| `default_box_url` | Default box URL | |
+| `network` | Network to use for vagrant (/24), without last octect | 10.0.3 |
+| `bridge` | Network bridge device to use | 'lxcbr0' |
 
-## Minions
+#### Example
 
-### Available Boxes
-
-| Distribution | VagrantCloud box |
-| ------------ | ---------------- |
-| Ubuntu Precise 12.04 x86_64 | [fgrehm/precise64-lxc](https://vagrantcloud.com/fgrehm/precise64-lxc) |
-| Ubuntu Trusty 14.04 x86_64 | [fgrehm/trusty64-lxc](https://vagrantcloud.com/fgrehm/trusty64-lxc) |
-| Debian Wheezy 7 x86_64 | [fgrehm/wheezy64-lxc](https://vagrantcloud.com/fgrehm/wheezy64-lxc) |
-| CentOS 6 x86_64 | [fgrehm/centos-6-64-lxc](https://vagrantcloud.com/fgrehm/centos-6-64-lxc) |
-
-Want to use a different box? Check out the [vagrant-lxc-base-boxes](https://github.com/fgrehm/vagrant-lxc-base-boxes) repo.
-
-### Define minion
-To define minions you need to create a `minions.yaml` in the repo directory
-with the following format:
-
-```yaml
-- name: minion-box
-  box: fgrehm/trusty64-lxc
-  ram: 512M
-  ip: 10.0.3.11
+```YAML
+settings:
+  default_box: fgrehm/trusty64-lxc
+  network: 10.66.6
 ```
 
-### Shared folders
+### Master Settings
+
+| Key | Use | Default Value |
+| --- | --- | ------------- |
+| `box` | Master box to use | `default_box` |
+| `box_url` | Master box URL | |
+| `grains` | Grains to apply to the master | |
+| `folders` | Dict of folders and destinations to be mounted on the master | |
+
+#### Master Config
+
+This is a block of YAML that will be translated to the [master config](https://docs.saltstack.com/en/latest/ref/configuration/master.html) on the `saltmaster` machine.
+
+#### Master Grains
+
+If you're using the vagrant-salty-grains plugin you can set master grains via the YAML file (probably not needed as the `devmaster` doesn't really do much other than mount local files and run the master process)
+
+#### Example
+
+In the below example I'm settings some custom grains, remapping the shared folders as I want everything under one directory (/srv/salt) so I need to salso update the master config to match the new locations. This could also be used for mapping folders which exist outside this repo.
+
+```YAML
+settings:
+  salt:
+    master:
+      grains:
+        one: two
+        alist:
+          - foo
+          - bar
+      folders:
+        - from: salt/states                                                     
+          to: /srv/salt/states                                                  
+        - from: salt/formulas                                                   
+          to: /srv/salt/formulas 
+        - from: salt/pillar                                                     
+          to: /srv/salt/pillar                                                  
+      config:
+        file_roots:
+          base:
+            - /srv/salt/states
+            - /srv/salt/pillar
+            - /srv/salt/formulas/*
+        pillar_roots:
+          base:
+            - /srv/salt/pillar
+
+```
+### Global Minion Config
+
+Exactly the same as the master config just using the minion YAML key instead.
+
+```YAML
+settings:
+  salt:
+    minion:
+      config:
+        foo: bar
+        some_options:
+          - one
+          - two
+          - three
+```
+
+### Default Minion Grains
+
+If you're using the vagrant-salty-grains plugin you can set default grains which will be applied to all minions, these will be merged with any grains specified on a per minion basis (detailed below)
+
+```YAML
+settings:
+  salt:
+    minions:
+      default_grains:
+        foo: bar
+        grains_list:
+          - baz
+          - qux
+```
+
+## Defining Minions
+
+Minions are defined under the `minions` key with a number of settings available per minion
+
+| Key | Use | Default Value |
+| --- | --- | ------------- |
+| `name` | Name of the minion | none (required) |
+| `cpu` | Number of CPUs assigned to the container | 1 |
+| `ram` | Amount of RAM assigned to the container | 512M |
+| `box` | Box to use for the minion | `default_box` |
+| `box_url` | Box URL for the above box | none |
+| `folders` | Folders to share with the minion | none |
+| `grains` | Grains to set on the minion | {} |
+| `highstate` | Run highstate on minion during provisioning | flase |
+
+### Minimum YAML Needed for a Minion
+
+```YAML
+minions:
+  - name: minion-box
+```
+
+### Shared Folders
 If you need to share folders with the minion you can add them in like so:
 
 ```yaml
-- name: minion-box
-  box: fgrehm/trusty64-lxc
-  ram: 512M
-  ip: 10.0.3.11
-  folders:
-    - from: ~/source/folder
-      to: /destination/folder
+minions:
+  - name: minion-box
+    folders:
+      - from: ~/source/folder
+        to: /destination/folder
 ```
 
 You can repeat this as many times as needed:
 
 ```yaml
- folders:
-   - from: ~/source/folder1
-     to: /destination/folder1
-   - from: ~/source/folder2
-     to: /destination/folder2
-   - from: ~/source/folder3
-     to: /destination/folder3
+minions:
+  - name:
+    folders:
+      - from: ~/source/folder1
+        to: /destination/folder1
+      - from: ~/source/folder2
+        to: /destination/folder2
+      - from: ~/source/folder3
+        to: /destination/folder3
 ```
 
-### Salt grains
-There are some default grains that can't be overwritten with the YAML file, if
-you need to change these you'll need to change them in the vagrant file itself.
-
-The reason for this is because I use conditionals in a few states (things like
-updating DNS via a script) and it prevents any accidental triggering of these
-states.
+### Per Minion Grains
 
 ```yaml
-  grains:
-      environment: development
-      provider: vagrant
-```
-
-If you need to define some grains so you can do so as below:
-
-```yaml
-  grains:
-    key: value
-    list:
-      - item1
-      - item2
+minions:
+  - name: minion-box
+    grains:
+      foo: bar
+      baz:
+        one: 1
+      qux:
+        - blah
 ```
 
 ### Example minion.yaml
 
 ```yaml
-- name: minion-box
-  box: fgrehm/precise64-lxc
-  ram: 512M
-  ip: 10.0.3.11
-  folders:
-    - from: ~/git/my-awesome-website
-      to: /var/www/my-awesome-website
-  grains:
-    role: webserver
-    list:
-      - item1
-      - item2
+minions:
+  - name: minion-01
+  - name: minion-02
+    box: fakebox
+    box_url: http://example.com/fakebox.box
+    grains:
+      i_like_turtles: true
+  - name: minion-03
+    ram: 1024M
+    cpu: 4
+    highstate: true
+    folders:
+      - from: ~/boom
+        to: /shanka
+
 ```
-
-# Time to play!
-Once you've setup the minions.yaml you can check everything out.
-
-````vagrant status````
-
-First we need to fire up the Salt Master.
-
-````vagrant up saltmaster````
-
-Now you can fire up your minions as needed.
-
-````vagrant up minion-box````
-
-By default this vagrantfile does not run a highstate as I find it can slow
-things down when developing states.
-
-Once it's all up and running you can ssh into it and run a highstate manually
-
-````vagrant ssh minion-box````  
-````sudo salt-call state.highstate````
 
 # Notes
 
-I do not suggest firing up both master and minions at the same time as this can
-lead to a broken setup where the minions are up before the master which means
-you need to manually restart the salt-minion on each minion box to get them
-taliking to the master properly, and that's no fun.
-
-The keys in salt/keys are insecure, they are only meant for use in this Vagrant
-setup, DO NOT use them anywhere else!
+It's always best to fire up the `devmaster` before the minions or you can get everything in a bit of a race condition where the minions come up before the master which leads to a broken setup where the minions are up before the master where you need to manually restart the salt-minion on each minion box to get them talking to the master properly, and that's no fun.

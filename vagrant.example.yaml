@@ -1,0 +1,7 @@
+settings:
+  domain: example.com
+
+minions:
+  - name: box-01
+  - name: box-02
+  - name: box-03
