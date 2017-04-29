@@ -36,7 +36,7 @@ If installed the vagrant-salty-grains plugin will be used for creating grains on
 0. Check your available boxes
     * `vagrant status`
 0. Spin up the devmaster
-    * `vagrant up saltmaster`
+    * `vagrant up devmaster`
 0. Spin up the minions as desired
     * `vagrant up box-01`
 
@@ -114,7 +114,6 @@ settings:
         file_roots:
           base:
             - /srv/salt/states
-            - /srv/salt/pillar
             - /srv/salt/formulas/*
         pillar_roots:
           base:
