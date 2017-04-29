@@ -104,12 +104,12 @@ settings:
           - foo
           - bar
       folders:
-        - from: salt/states                                                     
-          to: /srv/salt/states                                                  
-        - from: salt/formulas                                                   
-          to: /srv/salt/formulas 
-        - from: salt/pillar                                                     
-          to: /srv/salt/pillar                                                  
+        - from: salt/states
+          to: /srv/salt/states
+        - from: salt/formulas
+          to: /srv/salt/formulas
+        - from: salt/pillar
+          to: /srv/salt/pillar
       config:
         file_roots:
           base:
