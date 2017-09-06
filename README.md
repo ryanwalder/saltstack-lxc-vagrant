@@ -24,8 +24,10 @@ For now the default box is the `fgrehm/trusty64-lxc` box which is reasonably out
 
 1. [vagrant-lxc](https://github.com/fgrehm/vagrant-lxc)
 2. [salty-vagrant-grains](https://github.com/ahmadsherif/salty-vagrant-grains) (optional)
+3. [vagrant-proxyconf](https://github.com/tmatilai/vagrant-proxyconf) (optional)
 
 If installed the vagrant-salty-grains plugin will be used for creating grains on the minions and devmaster.
+If installed the vagrant-proxyconf plugin will be used to configures the virtual machine to use proxies
 
 ## Quickstart
 
@@ -64,6 +66,7 @@ All global settings are stored under the `settings` key, some can be overidden o
 | `default_box_url` | Default box URL | |
 | `network` | Network to use for vagrant (/24), without last octect | 10.0.3 |
 | `bridge` | Network bridge device to use | 'lxcbr0' |
+| `proxy` | Proxy server to use | |
 
 #### Example
 
@@ -71,6 +74,7 @@ All global settings are stored under the `settings` key, some can be overidden o
 settings:
   default_box: fgrehm/trusty64-lxc
   network: 10.66.6
+  proxy: http://192.168.0.2:3128
 ```
 
 ### Master Settings
