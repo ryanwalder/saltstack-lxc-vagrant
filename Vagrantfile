@@ -36,6 +36,7 @@ domain          = ".#{settings['domain']}"    || ''
 default_box     = settings['default_box']     || 'fgrehm/trusty64-lxc'
 network         = settings['network']         || '10.0.3'
 bridge          = settings['brigde']          || 'lxcbr0'
+proxy		= settings['proxy']           || ''
 master_box      = master['box']               || default_box
 master_box_url  = master['box_url']           || false
 master_grains   = master['grains']            || {}
@@ -68,6 +69,13 @@ minion_config = default_minion_config.merge!(minion_config)
 
 # Create boxes
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # Configure proxy
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    config.proxy.http     = "#{proxy}"
+    config.proxy.https    = "#{proxy}"
+    config.proxy.no_proxy = "localhost,127.0.0.1,.#{domain}"
+  end
+
   # Create Salt Master
   config.vm.define 'devmaster' do |master|
     master.vm.provider :lxc do |lxc|
