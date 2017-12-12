@@ -59,6 +59,7 @@ All global settings are stored under the `settings` key, some can be overidden o
 | Key | Use | Default Value |
 | --- | --- | ------------- |
 | `salt_version` | Set version of salt to use/install | stable |
+| `install_args` | When performing a git install, you can specify a branch, tag, or any treeish. Not supported on Windows. | |
 | `domain` | Appended to the end of minion names | |
 | `default_box` | Default box to use for minions | fgrehm/trusty64-lxc |
 | `default_box_url` | Default box URL | |
@@ -71,6 +72,8 @@ All global settings are stored under the `settings` key, some can be overidden o
 settings:
   default_box: fgrehm/trusty64-lxc
   network: 10.66.6
+  salt_version: git
+  install_args: 2016.11.7
 ```
 
 ### Master Settings

@@ -32,6 +32,7 @@ minions         = config['minions']           || []
 
 # Set options from config, use defaults if they don't exist
 salt_version    = settings['salt_version']    || 'stable'
+install_args    = settings['install_args']    || ''
 domain          = ".#{settings['domain']}"    || ''
 default_box     = settings['default_box']     || 'fgrehm/trusty64-lxc'
 network         = settings['network']         || '10.0.3'
@@ -88,6 +89,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     master.vm.provision :salt do |salt|
       salt.minion_id         = 'devmaster'
       salt.install_type      = salt_version
+      salt.install_args      = install_args
       salt.install_master    = true
       salt.bootstrap_options = "-J '#{master_config.to_json}' -j '{\"master\": \"localhost\"}'"
       salt.run_highstate     = false
@@ -140,6 +142,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       minion.vm.provision :salt do |salt|
         salt.minion_id         = name
         salt.install_type      = salt_version
+        salt.install_args      = install_args
         salt.bootstrap_options = "-j '#{minion_config.to_json}'"
         salt.run_highstate     = highstate
         salt.verbose           = false
